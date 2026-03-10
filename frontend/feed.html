@@ -4,31 +4,84 @@
     <meta charset="UTF-8" />
     <title>My Feed - Think Books</title>
     <style>
-      body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+        background: #f5f5f5;
+      }
       .navbar {
-        background: #222; padding: 10px 0; margin-bottom: 30px; text-align: center;
+        background: #222;
+        padding: 10px 0;
+        margin-bottom: 30px;
+        text-align: center;
       }
       .navbar a {
-        color: #fff; text-decoration: none; margin: 0 15px; font-weight: bold; font-size: 16px;
+        color: #fff;
+        text-decoration: none;
+        margin: 0 15px;
+        font-weight: bold;
+        font-size: 16px;
       }
-      .navbar a:hover { text-decoration: underline; }
-      ul { list-style-type: none; padding: 0; }
+      .navbar a:hover {
+        text-decoration: underline;
+      }
+      ul {
+        list-style-type: none;
+        padding: 0;
+      }
       li.book-card {
-        background: #fff; margin: 15px 0; padding: 15px; border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s;
+        background: #fff;
+        margin: 15px 0;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
       }
-      li.book-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
-      .actions { margin-top: 10px; }
+      li.book-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+      }
+      .actions {
+        margin-top: 10px;
+      }
       button {
-        margin-right: 8px; padding: 5px 12px; cursor: pointer; border-radius: 5px; border: none;
-        background: linear-gradient(135deg,#007bff,#00c6ff); color: #fff; transition: all 0.2s ease;
+        margin-right: 8px;
+        padding: 5px 12px;
+        cursor: pointer;
+        border-radius: 5px;
+        border: none;
+        background: linear-gradient(135deg, #007bff, #00c6ff);
+        color: #fff;
+        transition: all 0.2s ease;
       }
-      button:hover { transform: scale(1.05); }
-      button:disabled { opacity: 0.5; cursor: not-allowed; }
-      input[type="text"] { margin-top: 5px; padding: 5px; width: 70%; }
-      .badge { display: inline-block; margin-left: 8px; padding: 2px 6px; font-size: 12px; color: #fff; border-radius: 4px; }
-      .badge.new { background: green; }
-      .badge.following { background: #007bff; }
+      button:hover {
+        transform: scale(1.05);
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      input[type="text"] {
+        margin-top: 5px;
+        padding: 5px;
+        width: 70%;
+      }
+      .badge {
+        display: inline-block;
+        margin-left: 8px;
+        padding: 2px 6px;
+        font-size: 12px;
+        color: #fff;
+        border-radius: 4px;
+      }
+      .badge.new {
+        background: green;
+      }
+      .badge.following {
+        background: #007bff;
+      }
     </style>
   </head>
   <body>
@@ -65,7 +118,7 @@
         li.appendChild(recommended);
 
         const addedAt = new Date(book.createdAt || Date.now());
-        if ((Date.now() - addedAt) < 24*60*60*1000) {
+        if (Date.now() - addedAt < 24 * 60 * 60 * 1000) {
           const newBadge = document.createElement("span");
           newBadge.className = "badge new";
           newBadge.textContent = "New!";
@@ -95,7 +148,9 @@
         const commentInput = document.createElement("input");
         commentInput.type = "text";
         commentInput.id = `comment-${book._id}`;
-        commentInput.placeholder = currentUserId ? "Comment as " + localStorage.getItem("username") : "Add a comment";
+        commentInput.placeholder = currentUserId
+          ? "Comment as " + localStorage.getItem("username")
+          : "Add a comment";
         actions.appendChild(document.createElement("br"));
         actions.appendChild(commentInput);
 
@@ -133,7 +188,8 @@
           const books = await res.json();
           list.innerHTML = "";
           if (!books || books.length === 0) {
-            list.innerHTML = "<li>No recommendations yet from people you follow.</li>";
+            list.innerHTML =
+              "<li>No recommendations yet from people you follow.</li>";
             return;
           }
 
@@ -145,15 +201,21 @@
 
       async function likeBook(bookId) {
         const likesSpan = document.getElementById(`likes-${bookId}`);
-        const prev = parseInt(likesSpan.textContent) || 0;
-        likesSpan.textContent = prev + 1;
 
         try {
-          const res = await fetch(`/api/books/${bookId}/like`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: currentUserId }) });
+          const res = await fetch(`/api/books/${bookId}/like`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              userId: localStorage.getItem("userId"),
+            }),
+          });
+
           const data = await res.json();
-          likesSpan.textContent = data.likes || 0;
-        } catch {
-          likesSpan.textContent = prev;
+          likesSpan.textContent = data.likes;
+        } catch (err) {
           alert("Failed to like book");
         }
       }
@@ -171,7 +233,8 @@
             body: JSON.stringify({ userId, text }),
           });
           const data = await res.json();
-          document.getElementById(`comments-count-${bookId}`).textContent = data.commentsCount || 0;
+          document.getElementById(`comments-count-${bookId}`).textContent =
+            data.commentsCount || 0;
           input.value = "";
         } catch {
           alert("Failed to add comment");

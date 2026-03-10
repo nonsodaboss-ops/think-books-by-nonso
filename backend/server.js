@@ -187,13 +187,16 @@ app.post("/api/books/:id/like", async (req, res) => {
     }
 
     // Prevent duplicate likes
-    if (!book.likes.some((id) => id.toString() === userId)) {
+    if (userId && !book.likes.includes(userId)) {
       book.likes.push(userId);
     }
 
     await book.save();
 
-    res.json({ likes: book.likes.length });
+    res.json({
+      likes: book.likes.length
+    });
+
   } catch (err) {
     console.error("LIKE ERROR:", err);
     res.status(500).json({ message: "Failed to like book" });
