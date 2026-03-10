@@ -1,169 +1,183 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Think Books Home</title>
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-</head>
-<body>
-  <div class="navbar">
-    <a href="/">Home</a>
-    <a href="/register.html">Register</a>
-    <a href="/login.html">Login</a>
-    <a href="/recommend.html">Recommend</a>
-    <a href="/search.html">Search</a>
-    <a href="/feed.html">My Feed</a>
-  </div>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Think Books Home</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  </head>
+  <body>
+    <div class="navbar">
+      <a href="/">Home</a>
+      <a href="/register.html">Register</a>
+      <a href="/login.html">Login</a>
+      <a href="/recommend.html">Recommend</a>
+      <a href="/search.html">Search</a>
+      <a href="/feed.html">My Feed</a>
+    </div>
 
-  <h2>Welcome to Think Books!</h2>
-  <p>Use the navigation above to register, log in, and recommend books.</p>
+    <h2>Welcome to Think Books!</h2>
+    <p>Use the navigation above to register, log in, and recommend books.</p>
 
-  <h3>Available Books</h3>
-  <ul id="bookList">
-    <li>Loading books...</li>
-  </ul>
+    <h3>Available Books</h3>
+    <ul id="bookList">
+      <li>Loading books...</li>
+    </ul>
 
-  <script src="main.js"></script>
-  <script>
-    const currentUserId = localStorage.getItem("userId") || null;
+    <script src="main.js"></script>
+    <script>
+      const currentUserId = localStorage.getItem("userId") || null;
 
-    async function loadBooks() {
-      const list = document.getElementById("bookList");
-      if(!list) {
-        console.error("bookList element not found");
-        return;
-      }
-      list.innerHTML = "<li>Loading books...</li>";
-
-      try {
-        const res = await fetch("http://localhost:5000/api/books");
-        if (!res.ok) throw new Error("Failed to fetch books");
-        const books = await res.json();
-
-        list.innerHTML = "";
-        if (!books || books.length === 0) {
-          list.innerHTML = "<li>No books found</li>";
+      async function loadBooks() {
+        const list = document.getElementById("bookList");
+        if (!list) {
+          console.error("bookList element not found");
           return;
         }
+        list.innerHTML = "<li>Loading books...</li>";
 
-        books.forEach(renderBook);
-      } catch (err) {
-        list.innerHTML = `<li style="color:red">Error loading books: ${err.message}</li>`;
+        try {
+          const res = await fetch(
+            "http://think-books-by-nonso.onrender.com/api/books",
+          );
+          if (!res.ok) throw new Error("Failed to fetch books");
+          const books = await res.json();
+
+          list.innerHTML = "";
+          if (!books || books.length === 0) {
+            list.innerHTML = "<li>No books found</li>";
+            return;
+          }
+
+          books.forEach(renderBook);
+        } catch (err) {
+          list.innerHTML = `<li style="color:red">Error loading books: ${err.message}</li>`;
+        }
       }
-    }
 
-    function renderBook(book) {
-      const list = document.getElementById("bookList");
-      const li = document.createElement("li");
-      li.className = "book-card";
+      function renderBook(book) {
+        const list = document.getElementById("bookList");
+        const li = document.createElement("li");
+        li.className = "book-card";
 
-      const title = document.createElement("div");
-      title.innerHTML = `<strong>${book.title}</strong> by ${book.author}`;
-      li.appendChild(title);
+        const title = document.createElement("div");
+        title.innerHTML = `<strong>${book.title}</strong> by ${book.author}`;
+        li.appendChild(title);
 
-      const recommended = document.createElement("div");
-      recommended.textContent = `Recommended by: ${book.recommendedByName || "Unknown"}`;
-      li.appendChild(recommended);
+        const recommended = document.createElement("div");
+        recommended.textContent = `Recommended by: ${book.recommendedByName || "Unknown"}`;
+        li.appendChild(recommended);
 
-      const actions = document.createElement("div");
-      actions.className = "actions";
+        const actions = document.createElement("div");
+        actions.className = "actions";
 
-      const likesSpan = document.createElement("span");
-      likesSpan.id = `likes-${book._id}`;
-      likesSpan.textContent = book.likes?.length || 0;
-      actions.appendChild(document.createTextNode("Likes: "));
-      actions.appendChild(likesSpan);
+        const likesSpan = document.createElement("span");
+        likesSpan.id = `likes-${book._id}`;
+        likesSpan.textContent = book.likes?.length || 0;
+        actions.appendChild(document.createTextNode("Likes: "));
+        actions.appendChild(likesSpan);
 
-      const likeBtn = document.createElement("button");
-      likeBtn.textContent = "👍 Like";
-      likeBtn.onclick = () => likeBook(book._id);
-      actions.appendChild(likeBtn);
+        const likeBtn = document.createElement("button");
+        likeBtn.textContent = "👍 Like";
+        likeBtn.onclick = () => likeBook(book._id);
+        actions.appendChild(likeBtn);
 
-      const commentsSpan = document.createElement("span");
-      commentsSpan.id = `comments-count-${book._id}`;
-      commentsSpan.textContent = book.comments.length || 0;
-      actions.appendChild(document.createTextNode(" Comments: "));
-      actions.appendChild(commentsSpan);
+        const commentsSpan = document.createElement("span");
+        commentsSpan.id = `comments-count-${book._id}`;
+        commentsSpan.textContent = book.comments.length || 0;
+        actions.appendChild(document.createTextNode(" Comments: "));
+        actions.appendChild(commentsSpan);
 
-      const commentInput = document.createElement("input");
-      commentInput.type = "text";
-      commentInput.id = `comment-${book._id}`;
-      commentInput.placeholder = currentUserId ? "Add a comment" : "Login to comment";
-      actions.appendChild(document.createElement("br"));
-      actions.appendChild(commentInput);
+        const commentInput = document.createElement("input");
+        commentInput.type = "text";
+        commentInput.id = `comment-${book._id}`;
+        commentInput.placeholder = currentUserId
+          ? "Add a comment"
+          : "Login to comment";
+        actions.appendChild(document.createElement("br"));
+        actions.appendChild(commentInput);
 
-      const commentBtn = document.createElement("button");
-      commentBtn.textContent = "💬 Comment";
-      commentBtn.onclick = () => commentOnBook(book._id);
-      actions.appendChild(commentBtn);
+        const commentBtn = document.createElement("button");
+        commentBtn.textContent = "💬 Comment";
+        commentBtn.onclick = () => commentOnBook(book._id);
+        actions.appendChild(commentBtn);
 
-      const followBtn = document.createElement("button");
-      followBtn.textContent = "➕ Follow";
-      if (!book.recommendedBy || book.recommendedBy === currentUserId) {
-        followBtn.disabled = true;
-      } else {
-        followBtn.onclick = () => followUser(book.recommendedBy);
+        const followBtn = document.createElement("button");
+        followBtn.textContent = "➕ Follow";
+        if (!book.recommendedBy || book.recommendedBy === currentUserId) {
+          followBtn.disabled = true;
+        } else {
+          followBtn.onclick = () => followUser(book.recommendedBy);
+        }
+        actions.appendChild(followBtn);
+
+        li.appendChild(actions);
+        list.appendChild(li);
       }
-      actions.appendChild(followBtn);
 
-      li.appendChild(actions);
-      list.appendChild(li);
-    }
-
-    async function likeBook(bookId) {
-      const currentUserId = localStorage.getItem("userId");
-      if (!currentUserId) return alert("You must log in to like books.");
-      try {
-        const res = await fetch(`http://localhost:5000/api/books/${bookId}/like`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: currentUserId }),
-        });
-        const data = await res.json();
-        document.getElementById(`likes-${bookId}`).textContent = data.likes;
-      } catch {
-        alert("Failed to like book");
+      async function likeBook(bookId) {
+        const currentUserId = localStorage.getItem("userId");
+        if (!currentUserId) return alert("You must log in to like books.");
+        try {
+          const res = await fetch(
+            `http://think-books-by-nonso.onrender.com/api/books/${bookId}/like`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ userId: currentUserId }),
+            },
+          );
+          const data = await res.json();
+          document.getElementById(`likes-${bookId}`).textContent = data.likes;
+        } catch {
+          alert("Failed to like book");
+        }
       }
-    }
 
-    async function commentOnBook(bookId) {
-      const input = document.getElementById(`comment-${bookId}`);
-      const text = input.value.trim();
-      const username = localStorage.getItem("username")
+      async function commentOnBook(bookId) {
+        const input = document.getElementById(`comment-${bookId}`);
+        const text = input.value.trim();
+        const username = localStorage.getItem("username");
 
-      if (!text) return alert("Comment cannot be empty");
+        if (!text) return alert("Comment cannot be empty");
 
-      try {
-        const res = await fetch(`http://localhost:5000/api/books/${bookId}/comment`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user: username, text }),
-        });
-        const data = await res.json();
-        document.getElementById(`comments-count-${bookId}`).textContent = data.commentsCount;
-        input.value = "";
-      } catch {
-        alert("Failed to comment");
+        try {
+          const res = await fetch(
+            `http://think-books-by-nonso.onrender.com/api/books/${bookId}/comment`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ user: username, text }),
+            },
+          );
+          const data = await res.json();
+          document.getElementById(`comments-count-${bookId}`).textContent =
+            data.commentsCount;
+          input.value = "";
+        } catch {
+          alert("Failed to comment");
+        }
       }
-    }
 
-    async function followUser(userId) {
-      if (!currentUserId) return alert("You must log in to follow users.");
-      try {
-        const res = await fetch(`http://localhost:5000/api/users/${userId}/follow`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ followerId: currentUserId }),
-        });
-        const data = await res.json();
-        alert(data.message || "Now following user!");
-      } catch {
-        alert("Failed to follow user");
+      async function followUser(userId) {
+        if (!currentUserId) return alert("You must log in to follow users.");
+        try {
+          const res = await fetch(
+            `http://think-books-by-nonso.onrender.com/api/users/${userId}/follow`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ followerId: currentUserId }),
+            },
+          );
+          const data = await res.json();
+          alert(data.message || "Now following user!");
+        } catch {
+          alert("Failed to follow user");
+        }
       }
-    }
 
-    loadBooks();
-  </script>
-</body>
+      loadBooks();
+    </script>
+  </body>
 </html>
