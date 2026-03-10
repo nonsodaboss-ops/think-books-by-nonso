@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>My Feed - Think Books</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+      .navbar {
+        background: #222; padding: 10px 0; margin-bottom: 30px; text-align: center;
+      }
+      .navbar a {
+        color: #fff; text-decoration: none; margin: 0 15px; font-weight: bold; font-size: 16px;
+      }
+      .navbar a:hover { text-decoration: underline; }
+      ul { list-style-type: none; padding: 0; }
+      li.book-card {
+        background: #fff; margin: 15px 0; padding: 15px; border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s;
+      }
+      li.book-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
+      .actions { margin-top: 10px; }
+      button {
+        margin-right: 8px; padding: 5px 12px; cursor: pointer; border-radius: 5px; border: none;
+        background: linear-gradient(135deg,#007bff,#00c6ff); color: #fff; transition: all 0.2s ease;
+      }
+      button:hover { transform: scale(1.05); }
+      button:disabled { opacity: 0.5; cursor: not-allowed; }
+      input[type="text"] { margin-top: 5px; padding: 5px; width: 70%; }
+      .badge { display: inline-block; margin-left: 8px; padding: 2px 6px; font-size: 12px; color: #fff; border-radius: 4px; }
+      .badge.new { background: green; }
+      .badge.following { background: #007bff; }
+    </style>
+  </head>
+  <body>
+    <div class="navbar">
+      <a href="/">Home</a>
+      <a href="/register.html">Register</a>
+      <a href="/login.html">Login</a>
+      <a href="/recommend.html">Recommend</a>
+      <a href="/search.html">Search</a>
+      <a href="/feed.html">My Feed</a>
+    </div>
+
+    <h2>My Feed</h2>
+    <p>Books recommended by people you follow.</p>
+
+    <ul id="feedList">
+      <li>Loading feed...</li>
+    </ul>
+
+    <script>
+      const currentUserId = localStorage.getItem("userId");
+
+      function renderBook(book) {
+        const list = document.getElementById("feedList");
+        const li = document.createElement("li");
+        li.className = "book-card";
+
+        const title = document.createElement("div");
+        title.innerHTML = `<strong>${book.title}</strong> by ${book.author}`;
+        li.appendChild(title);
+
+        const recommended = document.createElement("div");
+        recommended.textContent = `Recommended by: ${book.recommendedByName || "Unknown"}`;
+        li.appendChild(recommended);
+
+        const addedAt = new Date(book.createdAt || Date.now());
+        if ((Date.now() - addedAt) < 24*60*60*1000) {
+          const newBadge = document.createElement("span");
+          newBadge.className = "badge new";
+          newBadge.textContent = "New!";
+          recommended.appendChild(newBadge);
+        }
+
+        const actions = document.createElement("div");
+        actions.className = "actions";
+
+        const likesSpan = document.createElement("span");
+        likesSpan.id = `likes-${book._id}`;
+        likesSpan.textContent = book.likes?.length || 0;
+        actions.appendChild(document.createTextNode("Likes: "));
+        actions.appendChild(likesSpan);
+
+        const likeBtn = document.createElement("button");
+        likeBtn.textContent = "👍 Like";
+        likeBtn.onclick = () => likeBook(book._id);
+        actions.appendChild(likeBtn);
+
+        const commentsSpan = document.createElement("span");
+        commentsSpan.id = `comments-count-${book._id}`;
+        commentsSpan.textContent = book.comments?.length || 0;
+        actions.appendChild(document.createTextNode(" Comments: "));
+        actions.appendChild(commentsSpan);
+
+        const commentInput = document.createElement("input");
+        commentInput.type = "text";
+        commentInput.id = `comment-${book._id}`;
+        commentInput.placeholder = currentUserId ? "Comment as " + localStorage.getItem("username") : "Add a comment";
+        actions.appendChild(document.createElement("br"));
+        actions.appendChild(commentInput);
+
+        const commentBtn = document.createElement("button");
+        commentBtn.textContent = "💬 Comment";
+        commentBtn.onclick = () => commentOnBook(book._id);
+        actions.appendChild(commentBtn);
+
+        const followBtn = document.createElement("button");
+        followBtn.textContent = "➕ Follow";
+        if (!book.recommendedBy || book.recommendedBy === currentUserId) {
+          followBtn.disabled = true;
+        } else {
+          followBtn.onclick = () => followUser(book.recommendedBy);
+        }
+        actions.appendChild(followBtn);
+
+        li.appendChild(actions);
+        list.appendChild(li);
+      }
+
+      async function loadFeed() {
+        const list = document.getElementById("feedList");
+        list.innerHTML = "<li>Loading feed...</li>";
+
+        try {
+          if (!currentUserId) {
+            list.innerHTML = "<li>Please log in to see your feed.</li>";
+            return;
+          }
+
+          const res = await fetch(`/api/users/${currentUserId}/feed`);
+          if (!res.ok) throw new Error("Failed to load feed");
+
+          const books = await res.json();
+          list.innerHTML = "";
+          if (!books || books.length === 0) {
+            list.innerHTML = "<li>No recommendations yet from people you follow.</li>";
+            return;
+          }
+
+          books.forEach(renderBook);
+        } catch (err) {
+          list.innerHTML = `<li style="color:red">Error loading feed: ${err.message}</li>`;
+        }
+      }
+
+      async function likeBook(bookId) {
+        const likesSpan = document.getElementById(`likes-${bookId}`);
+        const prev = parseInt(likesSpan.textContent) || 0;
+        likesSpan.textContent = prev + 1;
+
+        try {
+          const res = await fetch(`/api/books/${bookId}/like`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: currentUserId }) });
+          const data = await res.json();
+          likesSpan.textContent = data.likes || 0;
+        } catch {
+          likesSpan.textContent = prev;
+          alert("Failed to like book");
+        }
+      }
+
+      async function commentOnBook(bookId) {
+        const input = document.getElementById(`comment-${bookId}`);
+        const text = input.value.trim();
+        if (!text) return alert("Comment cannot be empty");
+        const userId = currentUserId || "Anonymous";
+
+        try {
+          const res = await fetch(`/api/books/${bookId}/comment`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId, text }),
+          });
+          const data = await res.json();
+          document.getElementById(`comments-count-${bookId}`).textContent = data.commentsCount || 0;
+          input.value = "";
+        } catch {
+          alert("Failed to add comment");
+        }
+      }
+
+      async function followUser(userId) {
+        if (!currentUserId) return alert("You must log in to follow users.");
+        try {
+          const res = await fetch(`/api/users/${userId}/follow`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ followerId: currentUserId }),
+          });
+          const data = await res.json();
+          alert(data.message || "Now following user!");
+        } catch {
+          alert("Failed to follow user");
+        }
+      }
+
+      loadFeed();
+    </script>
+  </body>
+</html>

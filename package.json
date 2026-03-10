@@ -1,0 +1,20 @@
+{
+  "name": "think-books",
+  "version": "1.0.0",
+  "description": "A book recommendation web app",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node backend/server.js",
+    "seed": "node backend/seed.js"
+  },
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.7.0",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1",
+    "mongoose": "^7.8.9"
+  }
+}

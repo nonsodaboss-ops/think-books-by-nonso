@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - Think Books</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="navbar">
+    <a href="/">Home</a>
+    <a href="/register.html">Register</a>
+    <a href="/login.html">Login</a>
+    <a href="/recommend.html">Recommend</a>
+    <a href="/search.html">Search</a>
+    <a href="/feed.html">My Feed</a>
+  </div>
+
+  <h2>Login</h2>
+  <form id="loginForm">
+    <label>Username:</label><br>
+    <input type="text" id="username" required><br><br>
+    <label>Password:</label><br>
+    <input type="password" id="password" required><br><br>
+    <button type="submit">Login</button>
+  </form>
+  <p id="message"></p>
+
+  <script>
+    const form = document.getElementById("loginForm");
+    const message = document.getElementById("message");
+
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      try {
+        const res = await fetch("http://localhost:5000/api/users/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          localStorage.setItem("userId", data.user._id);
+          localStorage.setItem("username", data.user.username);
+          message.style.color = "green";
+          message.textContent = "Login successful! Redirecting...";
+          setTimeout(() => { window.location.href = "/"; }, 1000);
+        } else {
+          message.style.color = "red";
+          message.textContent = data.error || "Login failed.";
+        }
+      } catch (err) {
+        message.style.color = "red";
+        message.textContent = "Network error.";
+      }
+    });
+  </script>
+</body>
+</html>

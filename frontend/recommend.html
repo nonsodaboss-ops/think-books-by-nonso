@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Recommend a Book - Think Books</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="navbar">
+    <a href="/">Home</a>
+    <a href="/register.html">Register</a>
+    <a href="/login.html">Login</a>
+    <a href="/recommend.html">Recommend</a>
+    <a href="/search.html">Search</a>
+    <a href="/feed.html">My Feed</a>
+  </div>
+
+  <h2>Recommend a Book</h2>
+
+  <form id="recommendForm">
+    <label>Book Title:</label><br>
+    <input type="text" id="title" required><br><br>
+    <label>Author:</label><br>
+    <input type="text" id="author" required><br><br>
+    <label>Description:</label><br>
+    <textarea id="description" rows="4"></textarea><br><br>
+    <label>Genre:</label><br>
+    <input type="text" id="genre"><br><br>
+    <button type="submit">Recommend</button>
+  </form>
+  <p id="message"></p>
+
+  <script>
+    const currentUserId = localStorage.getItem("userId");
+    const username = localStorage.getItem("username");
+    const message = document.getElementById("message");
+
+    if (!currentUserId) {
+      document.getElementById("recommendForm").style.display = "none";
+      message.textContent = "You must log in to recommend books.";
+      message.style.color = "red";
+    }
+
+    const form = document.getElementById("recommendForm");
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      const title = document.getElementById("title").value.trim();
+      const author = document.getElementById("author").value.trim();
+      const description = document.getElementById("description").value.trim();
+      const genre = document.getElementById("genre").value.trim();
+
+      try {
+        const res = await fetch("http://localhost:5000/api/books", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, author, description, genre, userId: currentUserId })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          message.style.color = "green";
+          message.textContent = "Book recommended successfully!";
+          form.reset();
+        } else {
+          message.style.color = "red";
+          message.textContent = data.error || "Failed to recommend book.";
+        }
+      } catch (err) {
+        message.style.color = "red";
+        message.textContent = "Network error.";
+      }
+    });
+  </script>
+</body>
+</html>
