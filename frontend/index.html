@@ -38,7 +38,7 @@
 
         try {
           const res = await fetch(
-            "http://think-books-by-nonso.onrender.com/api/books",
+            "httpss://think-books-by-nonso.onrender.com/api/books",
           );
           if (!res.ok) throw new Error("Failed to fetch books");
           const books = await res.json();
@@ -120,7 +120,7 @@
         if (!currentUserId) return alert("You must log in to like books.");
         try {
           const res = await fetch(
-            `http://think-books-by-nonso.onrender.com/api/books/${bookId}/like`,
+            `https://think-books-by-nonso.onrender.com/api/books/${bookId}/like`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -143,7 +143,7 @@
 
         try {
           const res = await fetch(
-            `http://think-books-by-nonso.onrender.com/api/books/${bookId}/comment`,
+            `https://think-books-by-nonso.onrender.com/api/books/${bookId}/comment`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -163,7 +163,7 @@
         if (!currentUserId) return alert("You must log in to follow users.");
         try {
           const res = await fetch(
-            `http://think-books-by-nonso.onrender.com/api/users/${userId}/follow`,
+            `https://think-books-by-nonso.onrender.com/api/users/${userId}/follow`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },

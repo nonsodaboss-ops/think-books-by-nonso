@@ -11,12 +11,13 @@ app.use(cors());
 app.use(express.json());
 
 // Connect to MongoDB
-mongoose.connect("mongodb://127.0.0.1:27017/think-books", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log("MongoDB connected"))
-.catch(err => console.error("MongoDB connection error:", err));
+mongoose
+  .connect("mongodb://127.0.0.1:27017/think-books", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
 // Schemas & Models
 const userSchema = new mongoose.Schema({
@@ -73,7 +74,8 @@ app.post("/api/books/:bookId/like", async (req, res) => {
 // Comment on a book
 app.post("/api/books/:bookId/comment", async (req, res) => {
   const { userId, text } = req.body;
-  if (!text) return res.status(400).json({ message: "Comment cannot be empty" });
+  if (!text)
+    return res.status(400).json({ message: "Comment cannot be empty" });
 
   try {
     const book = await Book.findById(req.params.bookId);
@@ -93,7 +95,8 @@ app.post("/api/users/:userId/follow", async (req, res) => {
   try {
     const userToFollow = await User.findById(req.params.userId);
     const follower = await User.findById(followerId);
-    if (!userToFollow || !follower) return res.status(404).json({ message: "User not found" });
+    if (!userToFollow || !follower)
+      return res.status(404).json({ message: "User not found" });
 
     if (!follower.following.includes(userToFollow._id)) {
       follower.following.push(userToFollow._id);
@@ -127,10 +130,15 @@ app.post("/api/register", async (req, res) => {
 
   try {
     const existing = await User.findOne({ email });
-    if (existing) return res.status(400).json({ message: "Email already registered" });
+    if (existing)
+      return res.status(400).json({ message: "Email already registered" });
 
     const newUser = await User.create({ username, email, password });
-    res.json({ message: "User registered", userId: newUser._id, username: newUser.username });
+    res.json({
+      message: "User registered",
+      userId: newUser._id,
+      username: newUser.username,
+    });
   } catch {
     res.status(500).json({ message: "Failed to register user" });
   }
@@ -143,7 +151,12 @@ app.post("/api/books", async (req, res) => {
     return res.status(400).json({ message: "Missing book info" });
 
   try {
-    const newBook = await Book.create({ title, author, recommendedBy, recommendedByName });
+    const newBook = await Book.create({
+      title,
+      author,
+      recommendedBy,
+      recommendedByName,
+    });
     res.json(newBook);
   } catch {
     res.status(500).json({ message: "Failed to add book" });
@@ -151,4 +164,6 @@ app.post("/api/books", async (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(PORT, () =>
+  console.log(`Server running on https://localhost:${PORT}`),
+);
