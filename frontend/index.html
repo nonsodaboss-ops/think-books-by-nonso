@@ -38,7 +38,7 @@
 
         try {
           const res = await fetch(
-            "httpss://think-books-by-nonso.onrender.com/api/books",
+            "https://think-books-by-nonso.onrender.com/api/books",
           );
           if (!res.ok) throw new Error("Failed to fetch books");
           const books = await res.json();
